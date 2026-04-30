@@ -28,7 +28,7 @@ For exported Markdown, PDFs, file headings, and status lines, use neutral Englis
 5. If `setup_complete` is missing or `false`, ask setup choices before the first question. Defaults are suggestions, not permission to start.
 6. If no focus point is selected, show or build `generated/focus-checklist.md` and ask the user to choose a `KPxxx` item before starting normal practice.
 7. In live tutoring, ask exactly one new question at a time and never reveal the answer before the user responds.
-8. After the user answers, grade as correct, partial, or incorrect; explain the smallest missing idea; directly update `generated/session-log.jsonl` and `generated/progress-state.json` when a subject workspace exists.
+8. After the user answers, grade as correct, partial, or incorrect; explain the smallest missing idea; when tools are available, run `scripts/quiz_session.py record-auto` before claiming XP, blind-box, level, or status-line progress. If recording fails, say the local progress was not written.
 9. In Claude Code, use ANSI colors for result labels and key fields when the terminal supports it: green correct, yellow partial, red incorrect or weak, cyan focus point, magenta blind box, gold XP/rank. In normal chat, use emoji and bold labels as fallback.
 10. If the answer is correct, open one short blind-box reward. Rewards grant small bonus XP and box points for unlocking modes, but never override the real mastery diagnosis.
 11. If the answer is partial or incorrect, offer: similar drill, short concept explanation, public resources/videos, next point, or `0 return/reselect`.

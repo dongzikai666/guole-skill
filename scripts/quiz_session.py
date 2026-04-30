@@ -1063,28 +1063,98 @@ def export_mistakes(args: argparse.Namespace) -> int:
     return 0
 
 
-def record(args: argparse.Namespace) -> int:
-    config = load_config(args.config)
+def build_record_data(args: argparse.Namespace, config: dict[str, Any]) -> dict[str, Any]:
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
-    raw_result = str(args.result or "").strip().lower()
+    raw_result = str(getattr(args, "result", "") or "").strip().lower()
     normalized_result = normalize_result(raw_result)
-    study_mode = args.study_mode or config_value(config, "study_mode") or "quiz"
+    study_mode = getattr(args, "study_mode", "") or config_value(config, "study_mode") or "quiz"
     record_data = {
         "timestamp": now,
-        "question_id": args.question_id,
-        "knowledge_point": args.knowledge_point,
+        "question_id": getattr(args, "question_id", ""),
+        "knowledge_point": getattr(args, "knowledge_point", ""),
         "study_mode": study_mode,
-        "question_type": args.question_type or config_value(config, "question_type"),
-        "difficulty": args.difficulty or config_value(config, "difficulty"),
-        "scope": args.scope or config_value(config, "scope"),
-        "source_mode": args.source_mode or config_value(config, "source_mode"),
-        "past_exam_mode": args.past_exam_mode or config_value(config, "past_exam_mode"),
+        "question_type": getattr(args, "question_type", "") or config_value(config, "question_type"),
+        "difficulty": getattr(args, "difficulty", "") or config_value(config, "difficulty"),
+        "scope": getattr(args, "scope", "") or config_value(config, "scope"),
+        "source_mode": getattr(args, "source_mode", "") or config_value(config, "source_mode"),
+        "past_exam_mode": getattr(args, "past_exam_mode", "") or config_value(config, "past_exam_mode"),
         "result": normalized_result,
-        "mistake_type": args.mistake_type,
-        "notes": args.notes,
+        "mistake_type": getattr(args, "mistake_type", ""),
+        "notes": getattr(args, "notes", ""),
     }
     if raw_result in {"remembered", "fuzzy", "forgotten"} or study_mode == "memory":
         record_data["memory_result"] = raw_result or normalized_result
+    return record_data
+
+
+def resolve_workspace(workspace_arg: str) -> Path:
+    raw = Path(workspace_arg or "exam-coach-workspace").expanduser()
+    candidates: list[Path] = []
+    if raw.is_absolute():
+        candidates.append(raw)
+    else:
+        current = Path.cwd().resolve()
+        candidates.append((current / raw).resolve())
+        for parent in current.parents:
+            candidates.append((parent / raw).resolve())
+            if parent.parent == parent:
+                break
+    for candidate in candidates:
+        if candidate.exists() and candidate.is_dir():
+            return candidate
+    raise SystemExit(f"Workspace not found: {workspace_arg or 'exam-coach-workspace'}")
+
+
+def newest_subject(workspace: Path) -> Path | None:
+    subjects = workspace / "subjects"
+    if not subjects.exists():
+        return None
+    subject_dirs = [path for path in subjects.iterdir() if path.is_dir()]
+    if not subject_dirs:
+        return None
+    return max(subject_dirs, key=lambda path: path.stat().st_mtime)
+
+
+def resolve_subject(workspace: Path, subject_id: str = "") -> Path:
+    if subject_id:
+        subject = workspace / "subjects" / subject_id
+        if subject.exists() and subject.is_dir():
+            return subject
+        raise SystemExit(f"Subject not found: {subject}")
+
+    current_subject = workspace / "current-subject.txt"
+    if current_subject.exists():
+        current_id = current_subject.read_text(encoding="utf-8-sig").strip()
+        if current_id:
+            subject = workspace / "subjects" / current_id
+            if subject.exists() and subject.is_dir():
+                return subject
+
+    subject = newest_subject(workspace)
+    if subject:
+        return subject
+    raise SystemExit(f"No subject found under {workspace / 'subjects'}")
+
+
+def title_from_subject(subject: Path, progress_path: Path) -> str:
+    if progress_path.exists():
+        try:
+            state = json.loads(progress_path.read_text(encoding="utf-8-sig"))
+            if isinstance(state, dict) and state.get("title"):
+                return str(state["title"])
+        except json.JSONDecodeError:
+            pass
+    profile = subject / "course-profile.md"
+    if profile.exists():
+        for line in profile.read_text(encoding="utf-8-sig").splitlines():
+            if line.startswith("# "):
+                return line[2:].strip()
+    return subject.name
+
+
+def record(args: argparse.Namespace) -> int:
+    config = load_config(args.config)
+    record_data = build_record_data(args, config)
 
     attempts_path = Path(args.attempts)
     append_record(attempts_path, record_data)
@@ -1109,6 +1179,54 @@ def record(args: argparse.Namespace) -> int:
         state = progress_state(records, title=args.title, subject_id=args.subject_id, config=config)
         if state["latest_unlocks"]:
             print("Unlocked: " + ", ".join(state["latest_unlocks"]))
+    return 0
+
+
+def record_auto(args: argparse.Namespace) -> int:
+    workspace = resolve_workspace(args.workspace)
+    subject = resolve_subject(workspace, args.subject_id)
+    generated = subject / "generated"
+    generated.mkdir(parents=True, exist_ok=True)
+    config_path = subject / "config.json"
+    config = load_config(str(config_path)) if config_path.exists() else load_config("")
+    progress_path = generated / "progress-state.json"
+    attempts_path = generated / "session-log.jsonl"
+    title = args.title or title_from_subject(subject, progress_path)
+
+    record_data = build_record_data(args, config)
+    append_record(attempts_path, record_data)
+    records = load_attempts(attempts_path)
+    write_progress_state(progress_path, records, title=title, subject_id=subject.name, config=config)
+
+    index = len(records)
+    reward = reward_for(record_data, index)
+    state = progress_state(records, title=title, subject_id=subject.name, config=config)
+    summary = {
+        "ok": True,
+        "workspace": str(workspace),
+        "subject_id": subject.name,
+        "attempts_path": str(attempts_path),
+        "progress_state_path": str(progress_path),
+        "result": record_data["result"],
+        "attempt_xp": xp_for(record_data),
+        "bonus_xp": int(reward.get("bonus_xp") or 0) if reward else 0,
+        "box_points_delta": int(reward.get("box_points") or 0) if reward else 0,
+        "reward": reward,
+        "total_xp": state["total_xp"],
+        "level": state["level"],
+        "level_percent": state["level_percent"],
+        "answered_count": state["answered_count"],
+        "correct_count": state["correct_count"],
+        "partial_count": state["partial_count"],
+        "incorrect_count": state["incorrect_count"],
+        "weak_count": len(state["weak_points"]),
+        "box_points": state["box_points"],
+        "pet_stage": state["pet_stage"],
+        "pet_mood": state["pet_mood"],
+        "latest_unlocks": state["latest_unlocks"],
+        "motivation": state["latest_motivation"],
+    }
+    print(json.dumps(summary, ensure_ascii=False))
     return 0
 
 
@@ -1170,6 +1288,27 @@ def parse_args() -> argparse.Namespace:
     record_parser.add_argument("--mistake-type", default="", help="Mistake type.")
     record_parser.add_argument("--notes", default="", help="Short notes.")
     record_parser.set_defaults(func=record)
+
+    auto_parser = subparsers.add_parser("record-auto", help="Append one attempt to the active subject and refresh progress.")
+    auto_parser.add_argument("--workspace", default="exam-coach-workspace", help="Workspace directory to locate.")
+    auto_parser.add_argument("--subject-id", default="", help="Subject id. Defaults to current-subject.txt.")
+    auto_parser.add_argument("--title", default="", help="Course title override.")
+    auto_parser.add_argument("--question-id", default="", help="Question id.")
+    auto_parser.add_argument("--knowledge-point", required=True, help="Knowledge point tested.")
+    auto_parser.add_argument("--question-type", default="", help="Question type override.")
+    auto_parser.add_argument("--difficulty", default="", help="Difficulty override.")
+    auto_parser.add_argument("--scope", default="", help="Scope override.")
+    auto_parser.add_argument("--source-mode", default="", help="Source mode override.")
+    auto_parser.add_argument("--past-exam-mode", default="", help="Past exam mode override.")
+    auto_parser.add_argument(
+        "--result",
+        required=True,
+        help="correct, partial, incorrect, unscored, remembered, fuzzy, or forgotten.",
+    )
+    auto_parser.add_argument("--study-mode", default="", help="quiz or memory.")
+    auto_parser.add_argument("--mistake-type", default="", help="Mistake type.")
+    auto_parser.add_argument("--notes", default="", help="Short notes.")
+    auto_parser.set_defaults(func=record_auto)
 
     return parser.parse_args()
 

@@ -98,7 +98,9 @@ Keep explanations focused. The goal is to repair the exact missing idea.
 
 In compact mode, use one short `解析` paragraph and one `薄弱点` line. Save long teaching for when the user chooses "讲清概念".
 
-If a subject workspace exists, directly record each graded attempt in `generated/session-log.jsonl` with question type, difficulty, source mode, past-exam mode, result, mistake type, and notes. Refresh `generated/progress-state.json` immediately. Do not ask the user for permission to update these generated progress files inside the current subject workspace.
+If a subject workspace exists and tools are available, directly record each graded attempt by running `scripts/quiz_session.py record-auto` with question type, difficulty, source mode, past-exam mode, result, mistake type, and notes. The command appends `generated/session-log.jsonl` and refreshes `generated/progress-state.json`. Do not ask the user for permission to update these generated progress files inside the current subject workspace.
+
+Only claim XP, blind-box rewards, level changes, or status-line updates after the command succeeds. If tools are unavailable or recording fails, say the local progress was not written and continue tutoring from the chat state.
 
 After writing progress, mention one compact line such as: `Progress updated (+XP, Lv, answered/correct/partial, weak count, pet mood).`
 

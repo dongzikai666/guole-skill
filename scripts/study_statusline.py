@@ -106,13 +106,15 @@ def label_text(records: list[dict[str, Any]], grouped: dict[str, dict[str, Any]]
 def label_from_state(state: dict[str, Any]) -> str:
     level = int(state.get("level") or 1)
     percent = int(state.get("level_percent") or 0)
+    total_xp = int(state.get("total_xp") or 0)
     answered = int(state.get("answered_count") or 0)
     correct = int(state.get("correct_count") or 0)
     partial = int(state.get("partial_count") or 0)
     rank = "".join(str(state.get("rank_short") or state.get("title_label") or "Brz").split())[:4]
     pet = "".join(str(state.get("pet_stage") or state.get("pet_mood") or "Ember").split())[:7]
     weak = len(state.get("weak_points") or [])
-    return f"EC {rank}{level} {percent}XP {percent}% A{answered} C{correct}/P{partial} W{weak} {pet}"
+    box = int(state.get("box_points") or 0)
+    return f"GL {rank}{level} {total_xp}XP {percent}% A{answered} C{correct}/P{partial} W{weak} B{box} {pet}"
 
 
 def statusline_text(records: list[dict[str, Any]], grouped: dict[str, dict[str, Any]]) -> str:

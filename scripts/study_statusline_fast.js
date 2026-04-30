@@ -3,6 +3,7 @@
 // Reads generated/progress-state.json directly without starting Python.
 
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 
 function readJson(file) {
@@ -24,14 +25,204 @@ function readStdinJson() {
   }
 }
 
+const DIFFICULTY_XP = {
+  easy: 10,
+  basic: 10,
+  medium: 20,
+  final_regular: 20,
+  hard: 35,
+  advanced: 35,
+  challenge: 50,
+  sprint: 50,
+};
+
+const RANKS = [
+  [30, "Legend", "Leg"],
+  [25, "King", "King"],
+  [20, "Master", "Mst"],
+  [15, "Diamond", "Dia"],
+  [10, "Platinum", "Plat"],
+  [6, "Gold", "Gold"],
+  [3, "Silver", "Sil"],
+  [1, "Bronze", "Brz"],
+];
+
+const REWARD_BOXES = [
+  ["common", "Recall Coin", 1, 1],
+  ["common", "Focus Shard", 1, 1],
+  ["common", "Formula Spark", 1, 1],
+  ["rare", "Error Scanner", 3, 2],
+  ["rare", "Sprint Token", 3, 2],
+  ["epic", "Diamond Key", 6, 4],
+  ["legendary", "King Star", 10, 8],
+];
+
+function readJsonl(file) {
+  try {
+    return fs
+      .readFileSync(file, "utf8")
+      .replace(/^\uFEFF/, "")
+      .split(/\r?\n/)
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
+  } catch {
+    return [];
+  }
+}
+
+function fileMtime(file) {
+  try {
+    return fs.statSync(file).mtimeMs;
+  } catch {
+    return -1;
+  }
+}
+
+function normalizeResult(value) {
+  const text = String(value || "").trim().toLowerCase();
+  if (["correct", "right", "yes", "true", "1", "remembered", "remember"].includes(text)) return "correct";
+  if (["partial", "hinted", "fuzzy"].includes(text)) return "partial";
+  if (["incorrect", "wrong", "no", "false", "0", "forgotten", "forget"].includes(text)) return "incorrect";
+  return "unscored";
+}
+
+function xpFor(record) {
+  const difficulty = String(record.difficulty || "easy").trim().toLowerCase();
+  const base = DIFFICULTY_XP[difficulty] || 10;
+  const result = normalizeResult(record.result);
+  if (result === "correct") return base;
+  if (result === "partial") return Math.max(1, Math.round(base * 0.4));
+  if (result === "incorrect" && (record.mistake_type || record.notes)) return 5;
+  return 0;
+}
+
+function rewardFor(record, index) {
+  if (normalizeResult(record.result) !== "correct") return null;
+  const seed = [record.timestamp || "", record.question_id || "", record.knowledge_point || "", String(index)].join("|");
+  let score = 0;
+  for (const char of seed) score += char.charCodeAt(0);
+  score %= 100;
+  let rarity = "common";
+  if (score >= 97) rarity = "legendary";
+  else if (score >= 85) rarity = "epic";
+  else if (score >= 60) rarity = "rare";
+  const pool = REWARD_BOXES.filter((item) => item[0] === rarity);
+  const chosen = pool[score % pool.length];
+  return { rarity: chosen[0], name: chosen[1], bonus_xp: chosen[2], box_points: chosen[3] };
+}
+
+function rankFor(level) {
+  for (const [minLevel, name, short] of RANKS) {
+    if (level >= minLevel) return [name, short];
+  }
+  return ["Bronze", "Brz"];
+}
+
+function petStageFor(level) {
+  if (level >= 25) return "Mythic";
+  if (level >= 15) return "Aegis";
+  if (level >= 10) return "Vanguard";
+  if (level >= 6) return "Nova";
+  if (level >= 3) return "Pulse";
+  return "Ember";
+}
+
+function summarize(records) {
+  const grouped = new Map();
+  for (const record of records) {
+    const point = String(record.knowledge_point || "unspecified");
+    if (!grouped.has(point)) grouped.set(point, { attempts: 0, correct: 0, partial: 0, incorrect: 0 });
+    const item = grouped.get(point);
+    const result = normalizeResult(record.result);
+    item.attempts += 1;
+    if (result === "correct") item.correct += 1;
+    else if (result === "partial") item.partial += 1;
+    else if (result === "incorrect") item.incorrect += 1;
+  }
+  return grouped;
+}
+
+function statusFor(item) {
+  if (!item || !item.attempts) return "untested";
+  const ratio = (item.correct + 0.5 * item.partial) / item.attempts;
+  if (item.incorrect === 0 && item.attempts >= 2 && ratio >= 0.8) return "strong";
+  if (ratio >= 0.5) return "developing";
+  return "weak";
+}
+
+function progressFromRecords(records, baseState = {}) {
+  let totalXp = 0;
+  let boxPoints = 0;
+  let rewardCount = 0;
+  records.forEach((record, index) => {
+    totalXp += xpFor(record);
+    const reward = rewardFor(record, index + 1);
+    if (reward) {
+      totalXp += Number(reward.bonus_xp) || 0;
+      boxPoints += Number(reward.box_points) || 0;
+      rewardCount += 1;
+    }
+  });
+  const level = Math.floor(totalXp / 100) + 1;
+  const currentPercent = totalXp - (level - 1) * 100;
+  const [rankName, rankShort] = rankFor(level);
+  const results = records.map((record) => normalizeResult(record.result));
+  const grouped = summarize(records);
+  const weakPoints = [...grouped.entries()].filter(([, item]) => statusFor(item) === "weak").map(([point]) => point);
+  const strongCount = [...grouped.values()].filter((item) => statusFor(item) === "strong").length;
+  const weakCount = weakPoints.length;
+  const petMood = weakCount > strongCount ? "Determined" : records.length ? "Charged" : "Standby";
+  return {
+    ...baseState,
+    total_xp: totalXp,
+    level,
+    level_percent: currentPercent,
+    title_label: rankName,
+    rank_name: rankName,
+    rank_short: rankShort,
+    attempt_count: records.length,
+    answered_count: results.filter((result) => result !== "unscored").length,
+    correct_count: results.filter((result) => result === "correct").length,
+    partial_count: results.filter((result) => result === "partial").length,
+    incorrect_count: results.filter((result) => result === "incorrect").length,
+    reward_count: rewardCount,
+    box_points: boxPoints,
+    weak_points: weakPoints,
+    pet_stage: petStageFor(level),
+    pet_mood: petMood,
+    next_quest: weakPoints.length ? `repair ${weakPoints[0]}` : "complete a mixed quiz",
+  };
+}
+
+function stateWithFreshLog(statePath, state) {
+  if (!statePath) return state;
+  const logPath = path.join(path.dirname(statePath), "session-log.jsonl");
+  if (!fs.existsSync(logPath)) return state;
+  const records = readJsonl(logPath);
+  if (!records.length) return state;
+  if (!state || fileMtime(logPath) > fileMtime(statePath)) {
+    return progressFromRecords(records, state || {});
+  }
+  return state;
+}
+
 function existingDir(value) {
   if (!value || typeof value !== "string") return "";
   try {
     const resolved = path.resolve(value);
-    return fs.existsSync(resolved) && fs.statSync(resolved).isDirectory() ? resolved : "";
+    if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) return resolved;
+    const repaired = repairHomePath(resolved);
+    if (repaired && fs.existsSync(repaired) && fs.statSync(repaired).isDirectory()) return repaired;
+    return "";
   } catch {
     return "";
   }
+}
+
+function repairHomePath(value) {
+  const match = String(value || "").match(/^([A-Za-z]:\\Users\\)[^\\]+\\(.+)$/i);
+  if (!match) return "";
+  return path.join(os.homedir(), match[2]);
 }
 
 function unique(items) {
@@ -236,7 +427,7 @@ function argValue(name) {
 const mode = process.argv[2] || "label";
 const session = readStdinJson();
 const statePath = findProgressState(argValue("--state"), session);
-const state = statePath ? readJson(statePath) : null;
+const state = stateWithFreshLog(statePath, statePath ? readJson(statePath) : null);
 
 function hasArg(name) {
   return process.argv.includes(name);

@@ -140,6 +140,7 @@ When asked about progress or score risk, include a short readiness snapshot:
 - Avoid repeating the full config after every answer.
 - Mention source folders only when they matter.
 - Use statusline and progress summaries for motivation; keep live tutoring focused on one question.
+- Do not output HTML non-breaking-space entities; use normal spaces or line breaks.
 
 ## Token Budget
 

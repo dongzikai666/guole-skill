@@ -136,7 +136,7 @@ When the user wants a compact dashboard similar to a coding HUD/status panel, pr
 One-line format:
 
 ```text
-EC Dia15 42XP 42% A27 C18/P5 W2 B10 Aegis
+GL Dia15 42XP 42% A27 C18/P5 W2 B10 Aegis
 ```
 
 Rules:
@@ -144,4 +144,4 @@ Rules:
 - Keep it under one terminal line when possible.
 - Show rank, level, current-level XP/progress, answered/correct/partial, weak count, box points, and companion stage.
 - Avoid decorative clutter. The HUD should be glanceable.
-- If no scored attempts exist, show `EC Brz1 0XP 0% A0 C0/P0 W0 Ember`.
+- If no scored attempts exist, show `GL Brz1 0XP 0% A0 C0/P0 W0 B0 Ember`.

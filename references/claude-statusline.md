@@ -61,8 +61,12 @@ The fast helper finds progress state in this order:
 
 1. `--state` argument.
 2. `EXAM_STUDY_PROGRESS_STATE` environment variable.
-3. `exam-coach-workspace/current-subject.txt` in the current directory or its parents.
-4. `generated/progress-state.json` if the terminal is inside a subject directory.
+3. Claude Code stdin workspace roots such as `workspace.current_dir`, `workspace.project_dir`, `cwd`, and added dirs.
+4. `exam-coach-workspace/current-subject.txt` in the current directory or its parents.
+5. The newest subject `generated/progress-state.json` if no current subject is set.
+6. `generated/progress-state.json` if the terminal is inside a subject directory.
+
+If `generated/session-log.jsonl` is newer than `progress-state.json`, the helper derives aggregate XP and answer counts from the log so the HUD does not get stuck on a stale state file.
 
 ## Motivational Quotes
 
