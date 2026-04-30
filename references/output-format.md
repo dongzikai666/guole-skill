@@ -58,7 +58,7 @@ Rules:
 
 - Correct: start with `✅ 正确` and give one short encouragement.
 - Partial: start with `🟡 半对` and name the missing condition, step, or precision.
-- Incorrect: start with `❌ 错误` and comfort the learner before repairing the concept.
+- Incorrect: start with `❌ 错误` and give one short supportive sentence before repairing the concept.
 - Add one Chinese mnemonic or short rhyme when explaining a concept.
 - Add a one-line quote or micro story only when it fits the turn; never add a long motivational block.
 - In Claude Code terminal/statusline, ANSI colors are allowed: green for correct, yellow for partial, red for incorrect or weak points, cyan/magenta for rank and companion.
@@ -93,10 +93,10 @@ If the client is not Claude Code or colors are uncertain, use:
 鼓励：这题拿下了，说明这个考点已经开始站稳。
 ```
 
-错误或半对时也要安慰，但保持短：
+错误或半对时保留一句短反馈，但不要使用固定标签：
 
 ```text
-安慰：错题不是退步，是定位雷区；现在修，考场就少丢分。
+提示：错题不是退步，是定位雷区；现在修，考场就少丢分。
 ```
 
 ## Return Menu

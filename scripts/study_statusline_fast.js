@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Fast statusline helper for claude-hud --extra-cmd.
+// Fast statusline helper for Claude Code.
 // Reads generated/progress-state.json directly without starting Python.
 
 const fs = require("fs");
@@ -13,20 +13,91 @@ function readJson(file) {
   }
 }
 
-function findProgressState(explicit) {
-  if (explicit && fs.existsSync(explicit)) return explicit;
-  if (process.env.EXAM_STUDY_PROGRESS_STATE && fs.existsSync(process.env.EXAM_STUDY_PROGRESS_STATE)) {
-    return process.env.EXAM_STUDY_PROGRESS_STATE;
+function readStdinJson() {
+  try {
+    if (process.stdin.isTTY) return null;
+    const input = fs.readFileSync(0, "utf8").replace(/^\uFEFF/, "").trim();
+    if (!input) return null;
+    return JSON.parse(input);
+  } catch {
+    return null;
   }
+}
 
-  let current = process.cwd();
+function existingDir(value) {
+  if (!value || typeof value !== "string") return "";
+  try {
+    const resolved = path.resolve(value);
+    return fs.existsSync(resolved) && fs.statSync(resolved).isDirectory() ? resolved : "";
+  } catch {
+    return "";
+  }
+}
+
+function unique(items) {
+  const seen = new Set();
+  const result = [];
+  for (const item of items) {
+    if (!item || seen.has(item)) continue;
+    seen.add(item);
+    result.push(item);
+  }
+  return result;
+}
+
+function rootsFromSession(session) {
+  const roots = [];
+  if (session && typeof session === "object") {
+    const workspace = session.workspace && typeof session.workspace === "object" ? session.workspace : {};
+    roots.push(workspace.current_dir);
+    roots.push(workspace.project_dir);
+    if (Array.isArray(workspace.added_dirs)) roots.push(...workspace.added_dirs);
+    roots.push(session.cwd);
+    const worktree = session.worktree && typeof session.worktree === "object" ? session.worktree : {};
+    roots.push(worktree.path);
+    roots.push(worktree.original_cwd);
+  }
+  roots.push(process.cwd());
+  return unique(roots.map(existingDir));
+}
+
+function newestProgressState(workspace) {
+  const subjects = path.join(workspace, "subjects");
+  if (!fs.existsSync(subjects)) return "";
+  let newest = "";
+  let newestMtime = -1;
+  for (const subjectId of fs.readdirSync(subjects)) {
+    const candidate = path.join(subjects, subjectId, "generated", "progress-state.json");
+    try {
+      const stat = fs.statSync(candidate);
+      if (stat.isFile() && stat.mtimeMs > newestMtime) {
+        newest = candidate;
+        newestMtime = stat.mtimeMs;
+      }
+    } catch {
+      // Ignore missing or unreadable subjects.
+    }
+  }
+  return newest;
+}
+
+function stateFromWorkspace(workspace) {
+  const currentSubject = path.join(workspace, "current-subject.txt");
+  if (fs.existsSync(currentSubject)) {
+    const subjectId = fs.readFileSync(currentSubject, "utf8").replace(/^\uFEFF/, "").trim();
+    const candidate = path.join(workspace, "subjects", subjectId, "generated", "progress-state.json");
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return newestProgressState(workspace);
+}
+
+function stateFromRoot(root) {
+  let current = path.resolve(root);
   while (true) {
     const workspace = path.join(current, "exam-coach-workspace");
-    const currentSubject = path.join(workspace, "current-subject.txt");
-    if (fs.existsSync(currentSubject)) {
-      const subjectId = fs.readFileSync(currentSubject, "utf8").replace(/^\uFEFF/, "").trim();
-      const candidate = path.join(workspace, "subjects", subjectId, "generated", "progress-state.json");
-      if (fs.existsSync(candidate)) return candidate;
+    if (fs.existsSync(workspace)) {
+      const candidate = stateFromWorkspace(workspace);
+      if (candidate) return candidate;
     }
 
     const generatedCandidate = path.join(current, "generated", "progress-state.json");
@@ -38,10 +109,24 @@ function findProgressState(explicit) {
   }
 }
 
+function findProgressState(explicit, session) {
+  if (explicit && fs.existsSync(explicit)) return explicit;
+  if (process.env.EXAM_STUDY_PROGRESS_STATE && fs.existsSync(process.env.EXAM_STUDY_PROGRESS_STATE)) {
+    return process.env.EXAM_STUDY_PROGRESS_STATE;
+  }
+
+  for (const root of rootsFromSession(session)) {
+    const candidate = stateFromRoot(root);
+    if (candidate) return candidate;
+  }
+  return "";
+}
+
 function label(state) {
   if (!state) return "GL | setup";
   const level = Number(state.level) || 1;
   const percent = Number(state.level_percent) || 0;
+  const totalXp = Number(state.total_xp) || 0;
   const answered = Number(state.answered_count) || 0;
   const correct = Number(state.correct_count) || 0;
   const partial = Number(state.partial_count) || 0;
@@ -49,7 +134,7 @@ function label(state) {
   const pet = String(state.pet_stage || state.pet_mood || "Ember").replace(/\s+/g, "").slice(0, 7);
   const weak = Array.isArray(state.weak_points) ? state.weak_points.length : 0;
   const box = Number(state.box_points) || 0;
-  return `EC ${rank}${level} ${percent}XP ${percent}% A${answered} C${correct}/P${partial} W${weak} B${box} ${pet}`;
+  return `GL ${rank}${level} ${totalXp}XP ${percent}% A${answered} C${correct}/P${partial} W${weak} B${box} ${pet}`;
 }
 
 function bar(percent, width = 12) {
@@ -108,7 +193,7 @@ function coloredBar(percent, width, enabled) {
 
 function statusline(state) {
   const enabled = useColor();
-  if (!state) return `${color(enabled, ANSI.cyan, "[过了]")} ${color(enabled, ANSI.yellow, "setup needed")} | Run /guole`;
+  if (!state) return `${color(enabled, ANSI.cyan, "GL")} ${color(enabled, ANSI.yellow, "setup needed")} | Run /guole`;
   const level = Number(state.level) || 1;
   const percent = Number(state.level_percent) || 0;
   const totalXp = Number(state.total_xp) || 0;
@@ -137,7 +222,7 @@ function statusline(state) {
   const weakColor = weak > 0 ? ANSI.red : ANSI.green;
   const unlockText = unlocked ? `Unlocked ${unlocked}` : "Unlocked base";
   return [
-    `${color(enabled, ANSI.cyan, "[过了]")} ${color(enabled, rankColor(title), rankText)} | ${color(enabled, ANSI.brightYellow, xpText)} | ${progressText} | ${answerText}`,
+    `${color(enabled, ANSI.cyan, "GL")} ${color(enabled, rankColor(title), rankText)} | ${color(enabled, ANSI.brightYellow, xpText)} | ${progressText} | ${answerText}`,
     `${color(enabled, ANSI.brightCyan, "Companion")} ${color(enabled, ANSI.magenta, `${stage}/${mood}`)} | ${color(enabled, ANSI.brightMagenta, `Box ${box}`)} | ${color(enabled, weakColor, `Weak ${weak}`)} | ${color(enabled, ANSI.gray, `${unlockText} | Next: ${quest}`)}`,
   ].join("\n");
 }
@@ -149,7 +234,8 @@ function argValue(name) {
 }
 
 const mode = process.argv[2] || "label";
-const statePath = findProgressState(argValue("--state"));
+const session = readStdinJson();
+const statePath = findProgressState(argValue("--state"), session);
 const state = statePath ? readJson(statePath) : null;
 
 function hasArg(name) {

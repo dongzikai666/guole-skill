@@ -17,6 +17,8 @@ The display name is defined by `agents/openai.yaml` and README. In Chinese repli
 
 `/guole` and `$guole` are command triggers. `guole` is pinyin for the Chinese display name meaning "passed". Never translate, reinterpret, or introduce `guole` as another Chinese brand name. Do not call the skill by its command name in user-facing text.
 
+For exported Markdown, PDFs, file headings, and status lines, use neutral English branding such as `GL Study Coach` or the short `GL` label. Do not write the command word as a natural-language brand in generated artifacts.
+
 ## Core Rules
 
 1. Match the user's language; use Chinese for Chinese users.

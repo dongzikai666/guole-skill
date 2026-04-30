@@ -111,7 +111,7 @@ For Claude Code, result labels may use ANSI colors:
 - magenta blind-box rewards
 - gold XP and rank
 
-Also include one short encouragement or comfort line. Do not turn it into a long motivational speech.
+Also include one short supportive line. Do not turn it into a long motivational speech.
 
 ## Branch After Grading
 

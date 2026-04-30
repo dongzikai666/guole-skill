@@ -21,11 +21,11 @@ If the user asks inside `/guole` to enable the status line, run setup once:
 python scripts/setup_statusline.py --mode standalone --claude-dir ~/.claude --skill-dir ~/.claude/skills/guole
 ```
 
-The setup script backs up `settings.json` and writes a direct 过了.skill status line.
+The setup script backs up `settings.json` and writes a direct GL Study Coach status line.
 
 If the user already sees the bottom status line after `/guole`, do not repeat setup.
 
-Use `claude-hud-extra` only when the user already has claude-hud and wants to append 过了.skill:
+Use `claude-hud-extra` only when the user already has claude-hud and wants to append GL Study Coach:
 
 Example command shape:
 
@@ -50,7 +50,7 @@ Use `--plain` when the terminal does not render ANSI colors correctly.
 The compact label includes box points:
 
 ```text
-EC Dia15 42XP 42% A27 C18/P5 W2 B10 Aegis
+GL Dia15 42XP 42% A27 C18/P5 W2 B10 Aegis
 ```
 
 The colored standalone status line should show rank/XP/progress, answer counts, companion, box points, weak count, unlocked modes, and next quest. It must not depend on claude-hud.

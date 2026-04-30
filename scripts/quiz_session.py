@@ -710,7 +710,7 @@ def hud_line(records: list[dict[str, Any]], grouped: dict[str, dict[str, Any]]) 
     weak_count = sum(1 for item in grouped.values() if status_for(item) == "weak")
     bar = progress_bar(current_percent)
     return (
-        f"[ExamCoach] Lv.{level} {title_for(level)} | XP {total_xp}/{next_target} | "
+        f"[GL] Lv.{level} {title_for(level)} | XP {total_xp}/{next_target} | "
         f"[{bar}] {current_percent}% | Pet {pet['stage']}/{pet['mood']} | Weak {weak_count} | Next: {next_quest(grouped)}"
     )
 

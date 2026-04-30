@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Configure Claude Code statusLine for 过了.skill progress."""
+"""Configure Claude Code statusLine for GL Study Coach progress."""
 
 from __future__ import annotations
 
@@ -78,7 +78,7 @@ def setup(args: argparse.Namespace) -> int:
             command = claude_hud_command_for(node_win=node_win, node_bash=node_bash, skill_dir=skill_dir)
         else:
             command = standalone_command_for(node_win=node_win, skill_dir=skill_dir)
-        settings["statusLine"] = {"type": "command", "command": command}
+        settings["statusLine"] = {"type": "command", "command": command, "refreshInterval": args.refresh_interval}
 
     if args.dry_run:
         print(json.dumps(settings.get("statusLine", {"disabled": True}), ensure_ascii=False, indent=2))
@@ -87,7 +87,7 @@ def setup(args: argparse.Namespace) -> int:
     settings_path.parent.mkdir(parents=True, exist_ok=True)
     if settings_path.exists():
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        backup = settings_path.with_suffix(f".json.examcoach-{timestamp}.bak")
+        backup = settings_path.with_suffix(f".json.glstudy-{timestamp}.bak")
         backup.write_text(settings_path.read_text(encoding="utf-8-sig"), encoding="utf-8")
         print(f"Backed up settings to {backup}")
     settings_path.write_text(json.dumps(settings, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -100,9 +100,9 @@ def setup(args: argparse.Namespace) -> int:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Configure 过了.skill progress in Claude Code statusLine.")
+    parser = argparse.ArgumentParser(description="Configure GL Study Coach progress in Claude Code statusLine.")
     parser.add_argument("--claude-dir", default="", help="Claude config directory. Defaults to ~/.claude.")
-    parser.add_argument("--skill-dir", default="", help="Installed 过了.skill directory.")
+    parser.add_argument("--skill-dir", default="", help="Installed GL Study Coach directory.")
     parser.add_argument(
         "--mode",
         choices=["standalone", "claude-hud-extra", "off"],
@@ -110,6 +110,12 @@ def parse_args() -> argparse.Namespace:
         help="standalone does not depend on claude-hud; claude-hud-extra appends to claude-hud; off disables.",
     )
     parser.add_argument("--dry-run", action="store_true", help="Print statusLine config without writing settings.")
+    parser.add_argument(
+        "--refresh-interval",
+        type=int,
+        default=2,
+        help="Seconds between automatic status line refreshes. Minimum in Claude Code is 1.",
+    )
     return parser.parse_args()
 
 

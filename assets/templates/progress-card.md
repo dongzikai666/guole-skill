@@ -8,7 +8,7 @@ Generated: {{generated_at}}
 - Level: 1
 - Title: Starter
 - XP to next level: 100
-- HUD: `[ExamCoach] Lv.1 Starter | XP 0/100 | [----------] 0% | Pet Waiting | Weak 0 | Next: first diagnostic quiz`
+- HUD: `GL Lv.1 Starter | XP 0/100 | [----------] 0% | Pet Waiting | Weak 0 | Next: first diagnostic quiz`
 
 ## Badges
 

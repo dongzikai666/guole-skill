@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Claude Code status line helper for 过了.skill.
+"""Claude Code status line helper for GL Study Coach.
 
 Modes:
 - label: JSON output for claude-hud --extra-cmd.
@@ -100,7 +100,7 @@ def label_text(records: list[dict[str, Any]], grouped: dict[str, dict[str, Any]]
         return "GL Lv.1 0% | Pet Standby | First quiz"
     total_xp, level, _next_target, current_percent = quiz_session.progress_numbers(records)
     pet = quiz_session.pet_metrics(records, grouped)
-    return f"ExamCoach Lv.{level} {current_percent}% | Pet {pet['mood']} | Weak {weak_count(grouped)}"
+    return f"GL Lv.{level} {current_percent}% | Pet {pet['mood']} | Weak {weak_count(grouped)}"
 
 
 def label_from_state(state: dict[str, Any]) -> str:
@@ -140,7 +140,7 @@ def statusline_text(records: list[dict[str, Any]], grouped: dict[str, dict[str, 
 
     return "\n".join(
         [
-            f"[过了] Lv.{level} {quiz_session.title_for(level)} | XP {total_xp}/{next_target} | [{bar}] {current_percent}%",
+            f"GL Lv.{level} {quiz_session.title_for(level)} | XP {total_xp}/{next_target} | [{bar}] {current_percent}%",
             f"Pet {pet['stage']}/{pet['mood']} | Energy {pet['energy']} | Focus {pet['focus']} | Bond {pet['bond']} | Weak {weak_count(grouped)}",
             f"Next: {quest} | {quote}",
         ]
@@ -167,7 +167,7 @@ def statusline_from_state(state: dict[str, Any]) -> str:
     quote = quote_for(level)
     return "\n".join(
         [
-            f"[过了] {title} Lv.{level} | XP {total_xp}/{next_target} | [{quiz_session.progress_bar(percent, width=12)}] {percent}% | A{answered} C{correct}/P{partial}/I{incorrect}",
+            f"GL {title} Lv.{level} | XP {total_xp}/{next_target} | [{quiz_session.progress_bar(percent, width=12)}] {percent}% | A{answered} C{correct}/P{partial}/I{incorrect}",
             f"Pet {stage}/{mood} | Energy {energy} | Focus {focus} | Bond {bond} | Weak {weak}",
             f"Next: {quest} | {quote}",
         ]
@@ -175,7 +175,7 @@ def statusline_from_state(state: dict[str, Any]) -> str:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Render 过了.skill status line output.")
+    parser = argparse.ArgumentParser(description="Render GL Study Coach status line output.")
     parser.add_argument("mode", choices=["label", "statusline"], help="Output mode.")
     parser.add_argument("--attempts", default="", help="Path to study-pack/quizzes/attempts.jsonl.")
     parser.add_argument("--state", default="", help="Path to generated/progress-state.json.")
