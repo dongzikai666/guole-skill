@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a lightweight source index for a Guole subject."""
+"""Build a lightweight source index for a study subject."""
 
 from __future__ import annotations
 

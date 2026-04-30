@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Initialize a Guole study workspace and subject."""
+"""Initialize a study workspace and subject."""
 
 from __future__ import annotations
 
@@ -182,7 +182,7 @@ def init_subject(args: argparse.Namespace) -> list[Path]:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Initialize a Guole subject workspace.")
+    parser = argparse.ArgumentParser(description="Initialize a study subject workspace.")
     parser.add_argument("--title", required=True, help="Course or exam title.")
     parser.add_argument("--subject-id", default="", help="Stable subject id. Defaults to a slug from title.")
     parser.add_argument("--workspace", default="exam-coach-workspace", help="Workspace directory.")

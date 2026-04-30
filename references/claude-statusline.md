@@ -15,17 +15,17 @@ This skill provides two helper implementations:
 
 Default to standalone mode. It does not require claude-hud and prints ANSI-colored progress in Claude Code.
 
-If the user invokes `/guole-setup`, run setup once:
+If the user asks inside `/guole` to enable the status line, run setup once:
 
 ```bash
 python scripts/setup_statusline.py --mode standalone --claude-dir ~/.claude --skill-dir ~/.claude/skills/guole
 ```
 
-The setup script backs up `settings.json` and writes a direct Guole status line.
+The setup script backs up `settings.json` and writes a direct 过了.skill status line.
 
 If the user already sees the bottom status line after `/guole`, do not repeat setup.
 
-Use `claude-hud-extra` only when the user already has claude-hud and wants to append Guole:
+Use `claude-hud-extra` only when the user already has claude-hud and wants to append 过了.skill:
 
 Example command shape:
 

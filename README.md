@@ -26,37 +26,41 @@ git clone https://github.com/dongzikai666/guole-skill.git ".claude\skills\guole"
 /guole
 ```
 
-如果你用旧版 README 装到了 `exam-study-coach`，也可以先用 `/exam-study-coach`，但推荐重装到 `guole`，这样入口更短。
-
 Codex / 其他 Agent 可用 `$skill-installer` 安装：
 
 ```text
 使用 $skill-installer 从 https://github.com/dongzikai666/guole-skill 安装这个 skill。
 ```
 
-`/guole` 是 Claude Code slash command；`$guole` 是 Agent 对话触发词，不是 CMD / PowerShell 命令。
+`/guole` 是 Claude Code slash command，`$guole` 是 Agent 对话触发词；它们不是 CMD / PowerShell 命令。这里的 `guole` 是“过了”的拼音入口，不是另一个中文品牌名。
 
 ## 使用
 
-常用命令：
+可用入口只有两个：
 
-| 命令 | 用途 |
+| 入口 | 用途 |
 | --- | --- |
-| `/guole` | 进入实时备考，一题一答 |
-| `/guole-setup` | 初始化课程空间、配置题型/难度/范围，必要时启用状态栏 |
-| `/guole-memory` | 记忆模式：讲一个重点、给口诀、做回忆自测 |
-| `/guole-report` | 查看掌握度、薄弱点和考试得分风险 |
-| `/guole-export` | 导出错题和薄弱点 |
-| `$guole` | Codex / Agent 触发词 |
+| `/guole` | Claude Code 中启动过了.skill |
+| `$guole` | Codex / Agent 中触发过了.skill |
 
-如果 Claude Code 已自动显示底部状态栏，就不用额外配置；如果没有，输入 `/guole-setup`，让它启用过了.skill 的状态栏。
+进入后直接用自然语言说你要做什么：
+
+```text
+帮我初始化课程空间。
+进入记忆模式，先背老师划的重点。
+查看我的掌握度和考试风险。
+导出错题和薄弱点。
+帮我启用状态栏。
+```
+
+如果 Claude Code 已自动显示底部状态栏，就不用额外配置；如果没有，在 `/guole` 对话里说“帮我启用状态栏”。
 
 ## 示例
 
 启动并初始化：
 
 ```text
-你：/guole-setup
+你：/guole
 过了.skill：检测到还没有课程空间。请告诉我课程名、考试时间、目标分数，并把资料放到对应文件夹。
 ```
 
@@ -87,10 +91,20 @@ KP003 正交投影｜中优先级｜来自 homework
 下一步：1 同类巩固｜2 下个考点｜3 看报告｜0 返回重选
 ```
 
+记忆模式：
+
+```text
+你：进入记忆模式，先背老师划的重点。
+过了.skill：记忆卡｜KP002 特征值与对角化
+通俗解释：对角化就是把复杂矩阵换成更好算的“坐标版本”。
+口诀：特征向量凑满屋，对角化才有路。
+回忆提示：请你不看资料，说出矩阵可对角化的一个常见判定条件。
+```
+
 状态栏示例：
 
 ```text
-EC Dia15 42XP 42% A27 C18/P5 W2 B10 Aegis
+GL Dia15 42XP 42% A27 C18/P5 W2 B10 Aegis
 ```
 
 报告示例：
@@ -104,7 +118,7 @@ EC Dia15 42XP 42% A27 C18/P5 W2 B10 Aegis
 
 ## 资料目录
 
-首次使用时，`/guole` 或 `/guole-setup` 会帮你创建本地课程空间：
+首次使用时，`/guole` 会帮你创建本地课程空间：
 
 ```text
 exam-coach-workspace/

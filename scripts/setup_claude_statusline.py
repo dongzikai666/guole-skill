@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Configure Claude Code statusLine for Guole / ExamCoach progress."""
+"""Configure Claude Code statusLine for 过了.skill progress."""
 
 from __future__ import annotations
 
@@ -100,9 +100,9 @@ def setup(args: argparse.Namespace) -> int:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Configure Guole / ExamCoach progress in Claude Code statusLine.")
+    parser = argparse.ArgumentParser(description="Configure 过了.skill progress in Claude Code statusLine.")
     parser.add_argument("--claude-dir", default="", help="Claude config directory. Defaults to ~/.claude.")
-    parser.add_argument("--skill-dir", default="", help="Installed Guole skill directory.")
+    parser.add_argument("--skill-dir", default="", help="Installed 过了.skill directory.")
     parser.add_argument(
         "--mode",
         choices=["standalone", "claude-hud-extra", "off"],

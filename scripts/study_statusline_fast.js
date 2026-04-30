@@ -39,7 +39,7 @@ function findProgressState(explicit) {
 }
 
 function label(state) {
-  if (!state) return "Guole | setup";
+  if (!state) return "GL | setup";
   const level = Number(state.level) || 1;
   const percent = Number(state.level_percent) || 0;
   const answered = Number(state.answered_count) || 0;
@@ -108,7 +108,7 @@ function coloredBar(percent, width, enabled) {
 
 function statusline(state) {
   const enabled = useColor();
-  if (!state) return `${color(enabled, ANSI.cyan, "[Guole]")} ${color(enabled, ANSI.yellow, "setup needed")} | Run /guole`;
+  if (!state) return `${color(enabled, ANSI.cyan, "[过了]")} ${color(enabled, ANSI.yellow, "setup needed")} | Run /guole`;
   const level = Number(state.level) || 1;
   const percent = Number(state.level_percent) || 0;
   const totalXp = Number(state.total_xp) || 0;
@@ -137,7 +137,7 @@ function statusline(state) {
   const weakColor = weak > 0 ? ANSI.red : ANSI.green;
   const unlockText = unlocked ? `Unlocked ${unlocked}` : "Unlocked base";
   return [
-    `${color(enabled, ANSI.cyan, "[Guole]")} ${color(enabled, rankColor(title), rankText)} | ${color(enabled, ANSI.brightYellow, xpText)} | ${progressText} | ${answerText}`,
+    `${color(enabled, ANSI.cyan, "[过了]")} ${color(enabled, rankColor(title), rankText)} | ${color(enabled, ANSI.brightYellow, xpText)} | ${progressText} | ${answerText}`,
     `${color(enabled, ANSI.brightCyan, "Companion")} ${color(enabled, ANSI.magenta, `${stage}/${mood}`)} | ${color(enabled, ANSI.brightMagenta, `Box ${box}`)} | ${color(enabled, weakColor, `Weak ${weak}`)} | ${color(enabled, ANSI.gray, `${unlockText} | Next: ${quest}`)}`,
   ].join("\n");
 }
