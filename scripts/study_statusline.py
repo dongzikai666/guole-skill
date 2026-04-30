@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Claude Code status line helper for exam-study-coach.
+"""Claude Code status line helper for Guole.
 
 Modes:
 - label: JSON output for claude-hud --extra-cmd.
@@ -175,7 +175,7 @@ def statusline_from_state(state: dict[str, Any]) -> str:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Render exam-study-coach status line output.")
+    parser = argparse.ArgumentParser(description="Render Guole status line output.")
     parser.add_argument("mode", choices=["label", "statusline"], help="Output mode.")
     parser.add_argument("--attempts", default="", help="Path to study-pack/quizzes/attempts.jsonl.")
     parser.add_argument("--state", default="", help="Path to generated/progress-state.json.")

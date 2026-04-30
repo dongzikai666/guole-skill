@@ -102,7 +102,7 @@ def setup(args: argparse.Namespace) -> int:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Configure Guole / ExamCoach progress in Claude Code statusLine.")
     parser.add_argument("--claude-dir", default="", help="Claude config directory. Defaults to ~/.claude.")
-    parser.add_argument("--skill-dir", default="", help="Installed exam-study-coach skill directory.")
+    parser.add_argument("--skill-dir", default="", help="Installed Guole skill directory.")
     parser.add_argument(
         "--mode",
         choices=["standalone", "claude-hud-extra", "off"],

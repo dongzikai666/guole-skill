@@ -108,7 +108,7 @@ function coloredBar(percent, width, enabled) {
 
 function statusline(state) {
   const enabled = useColor();
-  if (!state) return `${color(enabled, ANSI.cyan, "[Guole]")} ${color(enabled, ANSI.yellow, "setup needed")} | Run $guole`;
+  if (!state) return `${color(enabled, ANSI.cyan, "[Guole]")} ${color(enabled, ANSI.yellow, "setup needed")} | Run /guole`;
   const level = Number(state.level) || 1;
   const percent = Number(state.level_percent) || 0;
   const totalXp = Number(state.total_xp) || 0;

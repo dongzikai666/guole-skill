@@ -32,7 +32,7 @@ FIELDS = [
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Update exam-study-coach subject config.")
+    parser = argparse.ArgumentParser(description="Update Guole subject config.")
     parser.add_argument("--subject", required=True, help="Subject directory under exam-coach-workspace/subjects.")
     parser.add_argument("--setup-complete", action="store_true", help="Mark question-session setup complete.")
     parser.add_argument("--reset-setup", action="store_true", help="Force question-session setup prompts again.")

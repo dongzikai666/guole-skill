@@ -61,9 +61,22 @@ Keep the core skill agent-agnostic. It should work in Codex, Claude Code, and si
 
 ## Short Triggers
 
-Treat short invocations as live tutor mode, including `$guole`, `$guole-skill`, `/guole-setup`, `$exam-study-coach`, `/exam-study-coach`, `exam-study-coach`, "start exam tutor", and Chinese phrases meaning "start exam prep", "start practice", or "tutor mode".
+Treat short invocations as live tutor mode, including `/guole`, `/guole-skill`, `$guole`, `$guole-skill`, `$exam-study-coach`, `/exam-study-coach`, `exam-study-coach`, "start exam tutor", and Chinese phrases meaning "start exam prep", "start practice", or "tutor mode".
 
 If subject context exists and setup is complete, start with one diagnostic question. If setup is incomplete, ask the compact setup choices first. Do not ask the user to paste a long prompt.
+
+## Slash Commands
+
+Handle Claude Code slash-style invocations directly:
+
+- `/guole`: start live tutor mode. If no workspace exists, initialize setup first. If no focus point is selected, show/build the focus checklist first.
+- `/guole-setup`: initialize or repair the subject workspace, ask compact setup choices, and configure the Claude Code status line when tool access is available. Prefer `python scripts/setup_statusline.py --mode standalone`; if execution is unavailable, show the exact command.
+- `/guole-memory`: set or suggest `study_mode=memory`, then give one memory card, one mnemonic, and one recall prompt.
+- `/guole-report`: generate a compact mastery and exam-readiness report from `progress-state.json`, session logs, weak points, and source priority.
+- `/guole-export`: export wrong questions and weak points as Markdown; use PDF only if an available PDF tool or dependency exists.
+- `/guole-status`: show rank, XP, progress, weak count, box points, unlocked modes, and next recommended action.
+
+If the user already sees the Claude Code bottom status line after using `/guole`, do not ask them to run setup again. If the status line is missing or stale, suggest `/guole-setup`.
 
 ## Compact Setup
 

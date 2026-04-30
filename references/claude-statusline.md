@@ -15,32 +15,34 @@ This skill provides two helper implementations:
 
 Default to standalone mode. It does not require claude-hud and prints ANSI-colored progress in Claude Code.
 
-Use setup once:
+If the user invokes `/guole-setup`, run setup once:
 
 ```bash
-python exam-study-coach/scripts/setup_statusline.py --mode standalone --claude-dir ~/.claude --skill-dir ~/.claude/skills/exam-study-coach
+python scripts/setup_statusline.py --mode standalone --claude-dir ~/.claude --skill-dir ~/.claude/skills/guole
 ```
 
 The setup script backs up `settings.json` and writes a direct Guole status line.
+
+If the user already sees the bottom status line after `/guole`, do not repeat setup.
 
 Use `claude-hud-extra` only when the user already has claude-hud and wants to append Guole:
 
 Example command shape:
 
 ```text
-node path/to/claude-hud/dist/index.js --extra-cmd "node path/to/exam-study-coach/scripts/study_statusline_fast.js label"
+node path/to/claude-hud/dist/index.js --extra-cmd "node path/to/guole/scripts/study_statusline_fast.js label"
 ```
 
 Disable:
 
 ```bash
-python exam-study-coach/scripts/setup_statusline.py --mode off --claude-dir ~/.claude
+python scripts/setup_statusline.py --mode off --claude-dir ~/.claude
 ```
 
 Use `statusline` mode when the study HUD owns the whole bottom display.
 
 ```text
-node path/to/exam-study-coach/scripts/study_statusline_fast.js statusline --color --state exam-coach-workspace/subjects/course-name/generated/progress-state.json
+node path/to/guole/scripts/study_statusline_fast.js statusline --color --state exam-coach-workspace/subjects/course-name/generated/progress-state.json
 ```
 
 Use `--plain` when the terminal does not render ANSI colors correctly.

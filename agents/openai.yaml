@@ -1,7 +1,7 @@
 interface:
   display_name: "过了.skill"
   short_description: "短期突击、真题重点优先、错题追踪、记忆模式和考试风险评估的通用备考 Skill。"
-  default_prompt: "Use $guole to build a focus checklist from my materials and start one-question live tutoring."
+  default_prompt: "Use /guole to build a focus checklist from my materials and start one-question live tutoring."
 
 policy:
   allow_implicit_invocation: true

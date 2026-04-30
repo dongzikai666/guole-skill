@@ -22,7 +22,7 @@ If the workspace does not exist, offer to initialize it. If the user invokes the
 Use the helper:
 
 ```bash
-python exam-study-coach/scripts/init_subject.py --title "Course name"
+python scripts/init_subject.py --title "Course name"
 ```
 
 ## Subject Layout
@@ -69,7 +69,7 @@ Do not silently mix materials across subjects.
 After files are added, run or recommend:
 
 ```bash
-python exam-study-coach/scripts/index_sources.py --subject exam-coach-workspace/subjects/<subject-id>
+python scripts/index_sources.py --subject exam-coach-workspace/subjects/<subject-id>
 ```
 
 Use the generated index to decide which sources are reliable for scope, question style, explanations, and public resource recommendations.
@@ -79,7 +79,7 @@ Use the generated index to decide which sources are reliable for scope, question
 After indexing sources, run or recommend:
 
 ```bash
-python exam-study-coach/scripts/focus_checklist.py --subject exam-coach-workspace/subjects/<subject-id>
+python scripts/focus_checklist.py --subject exam-coach-workspace/subjects/<subject-id>
 ```
 
 Use `generated/focus-checklist.md` before normal practice. Ask the user to pick `KP001`, `KP002`, or `mixed` instead of jumping directly into a question.

@@ -8,7 +8,7 @@ Ask one question at a time. Wait for the answer. Grade one answer. Explain one a
 
 Do not generate a file, full quiz, study pack, or many questions unless the user explicitly asks for that.
 
-If the user only says `$exam-study-coach`, `/exam-study-coach`, "start study coach", "start exam tutor", or a short trigger meaning "start exam prep", treat that as Live Tutor Mode. Do not require the user to paste a long prompt.
+If the user only says `/guole`, `$guole`, `$exam-study-coach`, `/exam-study-coach`, "start study coach", "start exam tutor", or a short trigger meaning "start exam prep", treat that as Live Tutor Mode. Do not require the user to paste a long prompt.
 
 Before asking the first question, verify that an active subject exists. If no `exam-coach-workspace/` or subject exists, initialize or ask for the course name first. If a subject exists, read its `config.json`.
 
