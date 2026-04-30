@@ -10,13 +10,23 @@
 
 ## 安装
 
-### Claude Code: Windows CMD
+如果只是查看或二次开发，直接 clone 仓库就行：
 
 ```cmd
 git clone https://github.com/dongzikai666/guole-skill.git
-if not exist "%USERPROFILE%\.claude\skills" mkdir "%USERPROFILE%\.claude\skills"
+```
+
+如果要让 Claude Code 自动识别这个 Skill，一般就这三行：
+
+```cmd
+git clone https://github.com/dongzikai666/guole-skill.git
+mkdir "%USERPROFILE%\.claude\skills"
 xcopy /E /I /Y "guole-skill\exam-study-coach" "%USERPROFILE%\.claude\skills\exam-study-coach"
 ```
+
+如果已经 clone 过，跳过第一行；如果 `mkdir` 提示目录已存在，忽略即可。
+
+为什么不是只 clone 一条命令？因为这个仓库是分享仓库，真正的 Skill 包在 `exam-study-coach/` 子目录里；Claude Code 需要读取这个目录下的 `SKILL.md`。
 
 可选：启用 Claude Code 底部状态栏。
 
@@ -65,6 +75,20 @@ exam-coach-workspace/
         homework/
         user-mistakes/
 ```
+
+常用文件夹含义：
+
+| 文件夹 | 放什么 |
+| --- | --- |
+| `syllabus/` | 课程大纲、考试范围、题型说明 |
+| `teacher-focus/` | 老师划重点、考前提示，优先级最高 |
+| `past-exams/` | 历年真题、样卷、回忆版题目 |
+| `slides/` | PPT、课件、课堂讲义 |
+| `notes/` | 自己整理的笔记、知识点总结 |
+| `homework/` | 作业、习题、实验题、平时训练材料 |
+| `user-mistakes/` | 自己做错的题、不会的题、薄弱点记录 |
+
+还有几个可选目录：`textbook-excerpts/` 放少量教材摘录，`past-exam-answers/` 放你有权使用的真题答案，`public-links/` 放公开课程、公开视频或公开文档链接。
 
 然后在 Agent 对话里输入：
 
