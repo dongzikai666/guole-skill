@@ -2,7 +2,7 @@
 
 > 一个还在测试中的备考 Skill：把你自己的课件、真题、老师重点和笔记，变成考点清单、一题一答、错题反馈和复习建议。
 
-![过了.skill HUD preview](assets/guole-hud-preview.svg)
+![过了.skill preview](assets/guole-hero.png)
 
 目前是原型版，欢迎试用、提 issue、PR 或建议。
 
